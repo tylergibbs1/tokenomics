@@ -1,0 +1,47 @@
+{
+  "name": "tokenomics",
+  "version": "0.1.0",
+  "description": "Fresh, live LLM pricing for agents — CLI + MCP server. Sourced from the OpenRouter Models API (400+ models).",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "tokenomics": "dist/bin/tokenomics.js",
+    "tokenomics-mcp": "dist/bin/tokenomics-mcp.js"
+  },
+  "files": [
+    "dist",
+    "SKILL.md",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev:cli": "tsx src/bin/tokenomics.ts",
+    "dev:mcp": "tsx src/bin/tokenomics-mcp.ts",
+    "start:mcp": "node dist/bin/tokenomics-mcp.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run format:check && npm run lint && npm run typecheck",
+    "test": "node --test --import tsx ./test/*.test.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "commander": "^12.1.0",
+    "effect": "^3.21.4",
+    "zod": "^3.23.8",
+    "zod-to-json-schema": "^3.23.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "oxlint": "^0.15.0",
+    "prettier": "^3.4.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
