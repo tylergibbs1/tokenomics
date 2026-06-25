@@ -66,27 +66,47 @@ export function emitError(envelope: Record<string, unknown>): void {
   process.stderr.write(`${JSON.stringify(envelope, null, 2)}\n`);
 }
 
-/** Minimal table renderer for human terminal use; arrays of flat objects only. */
+/** Human-terminal table renderer. Arrays render as a grid; wrapper objects (e.g.
+ * search results) render their array properties as labeled sub-tables, with scalar
+ * metadata listed below. */
 function renderTable(data: unknown): string {
-  if (Array.isArray(data)) {
-    if (data.length === 0) return "(no rows)\n";
-    if (typeof data[0] !== "object" || data[0] === null) return `${data.join("\n")}\n`;
-    const cols = Array.from(new Set(data.flatMap((r) => Object.keys(r as object))));
-    const widths = cols.map((c) =>
-      Math.max(c.length, ...data.map((r) => cell((r as Record<string, unknown>)[c]).length)),
-    );
-    const header = cols.map((c, i) => c.padEnd(widths[i])).join("  ");
-    const rows = data.map((r) =>
-      cols.map((c, i) => cell((r as Record<string, unknown>)[c]).padEnd(widths[i])).join("  "),
-    );
-    return `${header}\n${rows.join("\n")}\n`;
-  }
+  if (Array.isArray(data)) return renderArray(data);
   if (data && typeof data === "object") {
-    return `${Object.entries(data)
-      .map(([k, v]) => `${k}: ${cell(v)}`)
-      .join("\n")}\n`;
+    const entries = Object.entries(data as Record<string, unknown>);
+    const arrays = entries.filter(([, v]) => Array.isArray(v));
+    // Flat record (no array properties): simple key/value list — covers `get`.
+    if (arrays.length === 0) {
+      return `${entries.map(([k, v]) => `${k}: ${cell(v)}`).join("\n")}\n`;
+    }
+    // Wrapper object: each array property becomes a sub-table, scalars summarized below.
+    const sections = arrays.map(([k, v]) => `${k}:\n${indent(renderArray(v as unknown[]))}`);
+    const scalars = entries
+      .filter(([, v]) => !Array.isArray(v) && (v == null || typeof v !== "object"))
+      .map(([k, v]) => `${k}: ${cell(v)}`);
+    return `${[...sections, ...(scalars.length ? [scalars.join("\n")] : [])].join("\n")}\n`;
   }
   return `${String(data)}\n`;
+}
+
+function renderArray(data: unknown[]): string {
+  if (data.length === 0) return "(no rows)\n";
+  if (typeof data[0] !== "object" || data[0] === null) return `${data.join("\n")}\n`;
+  const cols = Array.from(new Set(data.flatMap((r) => Object.keys(r as object))));
+  const widths = cols.map((c) =>
+    Math.max(c.length, ...data.map((r) => cell((r as Record<string, unknown>)[c]).length)),
+  );
+  const header = cols.map((c, i) => c.padEnd(widths[i])).join("  ");
+  const rows = data.map((r) =>
+    cols.map((c, i) => cell((r as Record<string, unknown>)[c]).padEnd(widths[i])).join("  "),
+  );
+  return `${header}\n${rows.join("\n")}\n`;
+}
+
+function indent(s: string): string {
+  return s
+    .split("\n")
+    .map((line) => (line ? `  ${line}` : line))
+    .join("\n");
 }
 
 function cell(v: unknown): string {
