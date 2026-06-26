@@ -1,7 +1,7 @@
 {
   "name": "tokenomics",
   "version": "0.1.0",
-  "description": "Fresh, live LLM pricing for agents — CLI + MCP server. Sourced from the OpenRouter Models API (400+ models).",
+  "description": "Fresh, live LLM pricing for agents — CLI + MCP server. Sourced from the models.dev catalog (140+ providers).",
   "type": "module",
   "license": "MIT",
   "bin": {

@@ -10,25 +10,27 @@ import { Modality } from "../core/types.js";
 
 /**
  * MCP surface. Four workflow-level tools (not CRUD wrappers): each maps to a real
- * agent intent and bundles the live OpenRouter fetch + matching + math so an agent
+ * agent intent and bundles the live models.dev fetch + matching + math so an agent
  * needs one call, not three. All tools are read-only; prices are fetched live from
- * OpenRouter (cached briefly in-process), so there is no separate refresh action.
+ * models.dev (cached briefly in-process), so there is no separate refresh action.
  */
 
-const INSTRUCTIONS = `tokenomics provides fresh, live pricing for 400+ LLMs from the OpenRouter Models API.
+const INSTRUCTIONS = `tokenomics provides fresh, live pricing for LLMs from the models.dev catalog.
 
 WHAT THIS SERVER IS FOR
 Answer questions about LLM API prices and the cost of running a workload on a model:
 which model is cheapest, what a given prompt/output volume will cost, and how
 candidate models compare. Data is fetched live on every call (briefly cached
-in-process), so it always reflects current OpenRouter pricing.
+in-process), so it always reflects current models.dev pricing.
 
 UNITS — read before using results
 - Every price field is USD per 1,000,000 tokens. A value of 2.5 means $2.50 per 1M tokens.
 - estimate_cost / compare_models take RAW token counts (e.g. 1000000), not millions.
 - output_per_mtok = null means the model is non-generative (embeddings/rerankers); its
   output tokens cost $0.
-- Model ids are 'provider/model', e.g. 'openai/gpt-4o', 'anthropic/claude-3.5-sonnet'.
+- The same model is often served by several providers at different prices. Model ids are
+  'provider/model' where provider is the SERVING provider, e.g. 'openai/gpt-4o',
+  'anthropic/claude-3.5-sonnet', 'requesty/xai/grok-4'.
 
 CHOOSING A TOOL
 - Discover / "what's cheap / which models exist" → search_models (filter, sorted cheapest-input first).

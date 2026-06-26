@@ -60,7 +60,7 @@ export function errorEnvelope(e: TokenomicsError): {
     case "FetchError":
       return {
         ...base,
-        suggestion: "Check network access to openrouter.ai and OPENROUTER_API_URL.",
+        suggestion: "Check network access to models.dev and MODELS_DEV_API_URL.",
         details: { url: e.url, status: e.status },
       };
   }

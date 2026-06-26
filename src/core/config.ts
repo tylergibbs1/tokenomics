@@ -3,18 +3,18 @@ import { Context, Layer } from "effect";
 /**
  * Runtime configuration from environment variables, so the tool works in headless
  * agent environments with zero interactive setup. Pricing comes live from the
- * OpenRouter Models API on every call; the only "state" is a short in-process cache.
+ * models.dev catalog on every call; the only "state" is a short in-process cache.
  */
 export interface Config {
-  /** OpenRouter Models API endpoint (returns all models + pricing). It is public — no key required. */
-  openRouterApiUrl: string;
+  /** models.dev catalog endpoint (returns all providers + models + pricing). It is public — no key required. */
+  modelsApiUrl: string;
   /**
    * Seconds to reuse a fetched models list within one process. Data stays live
-   * (at most this old) while avoiding a re-download of 400+ models for every call
-   * in a single MCP session. Set 0 to fetch fresh on every call.
+   * (at most this old) while avoiding a re-download of the full catalog for every
+   * call in a single MCP session. Set 0 to fetch fresh on every call.
    */
   cacheTtlSeconds: number;
-  /** Hard timeout for the OpenRouter request, so a hung network never hangs a tool call. */
+  /** Hard timeout for the models.dev request, so a hung network never hangs a tool call. */
   fetchTimeoutMs: number;
   /**
    * When true, a model lookup miss is a hard error (MODEL_NOT_FOUND). When false
@@ -39,7 +39,7 @@ function envInt(name: string, fallback: number): number {
 
 export function loadConfig(): Config {
   return {
-    openRouterApiUrl: process.env.OPENROUTER_API_URL || "https://openrouter.ai/api/v1/models",
+    modelsApiUrl: process.env.MODELS_DEV_API_URL || "https://models.dev/api.json",
     cacheTtlSeconds: envInt("TOKENOMICS_CACHE_TTL_SECONDS", 60),
     fetchTimeoutMs: envInt("TOKENOMICS_FETCH_TIMEOUT_MS", 15000),
     strictModelLookup: envBool("TOKENOMICS_STRICT_LOOKUP", false),

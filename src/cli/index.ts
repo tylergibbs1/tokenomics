@@ -62,7 +62,7 @@ export function buildCli(): Command {
   program
     .name("tokenomics")
     .description(
-      "Fresh, live LLM pricing for agents (CLI + MCP), sourced from the OpenRouter Models API. Prices are USD per 1M tokens.",
+      "Fresh, live LLM pricing for agents (CLI + MCP), sourced from the models.dev catalog. Prices are USD per 1M tokens.",
     )
     .version("0.1.0")
     .option("-o, --output <format>", "output format: json | ndjson | table | auto (default: json when piped)", "auto")
