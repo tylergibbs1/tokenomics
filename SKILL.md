@@ -5,8 +5,9 @@ description: Get fresh, live LLM pricing and cost estimates via the tokenomics C
 
 # tokenomics — live LLM pricing for agents
 
-Prices come live from the OpenRouter Models API (400+ models). There is no local
-database and no cache to refresh — every call reflects current data.
+Prices come live from the models.dev catalog (thousands of models across 140+
+providers). There is no local database and no cache to refresh — every call
+reflects current data.
 
 ## Units (read this first)
 

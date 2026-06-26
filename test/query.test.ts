@@ -14,9 +14,9 @@ const model = (over: Partial<ModelPricing> & Pick<ModelPricing, "provider" | "mo
   unit: "USD per 1M tokens",
   currency: "USD",
   notes: null,
-  source_url: `https://openrouter.ai/models/${over.model_id}`,
+  source_url: "https://models.dev",
   fetched_at: "2026-06-25T00:00:00.000Z",
-  source: "openrouter",
+  source: "models.dev",
 });
 
 const catalog: ModelPricing[] = [

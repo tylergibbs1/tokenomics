@@ -4,8 +4,8 @@
 
 ### Fresh, live LLM pricing for AI agents — as a CLI **and** an MCP server.
 
-No scraping. No database. No API keys. Every call returns current pricing for **400+ models**,
-straight from the [OpenRouter Models API](https://openrouter.ai/docs/guides/overview/models)
+No scraping. No database. No API keys. Every call returns current pricing for **thousands of models
+across 140+ providers**, straight from the [models.dev catalog](https://models.dev)
 and normalized to **USD per 1M tokens**.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -29,7 +29,7 @@ It's built the way Anthropic recommends agent tools should be built: a small set
 
 |                               |                                                                                               |
 | ----------------------------- | --------------------------------------------------------------------------------------------- |
-| 🔴 **Always live**            | Fetches OpenRouter on every call — data is fresh by construction. No DB to go stale.          |
+| 🔴 **Always live**            | Fetches models.dev on every call — data is fresh by construction. No DB to go stale.          |
 | 🔌 **Two surfaces, one core** | The same engine powers an agent-friendly CLI and an MCP server. Identical behavior.           |
 | 🧮 **Does the math**          | `estimate` and `compare` compute real USD cost from token counts and request volume.          |
 | 🤖 **Agent-first**            | JSON when piped, field masks, NDJSON, machine-readable errors, schema introspection.          |
@@ -58,7 +58,7 @@ npm link        # optional: puts the binaries on your PATH
 
 </details>
 
-Requires **Node 20+**. No API key needed — the OpenRouter `/models` endpoint is public.
+Requires **Node 20+**. No API key needed — the models.dev catalog is public.
 
 ## CLI
 
@@ -93,21 +93,21 @@ tokenomics schema estimate
 {
   "provider": "openai",
   "model_id": "openai/gpt-4o",
-  "display_name": "OpenAI: GPT-4o",
+  "display_name": "GPT-4o",
   "modality": "multimodal",
   "pricing": {
     "input_per_mtok": 2.5,
     "output_per_mtok": 10,
-    "cached_input_per_mtok": null,
+    "cached_input_per_mtok": 1.25,
     "cache_write_per_mtok": null
   },
   "context_window": 128000,
   "max_output_tokens": 16384,
   "unit": "USD per 1M tokens",
   "currency": "USD",
-  "source_url": "https://openrouter.ai/models/openai/gpt-4o",
+  "source_url": "https://models.dev",
   "fetched_at": "2026-06-25T16:00:21.174Z",
-  "source": "openrouter"
+  "source": "models.dev"
 }
 ```
 
@@ -163,13 +163,13 @@ The server ships rich `instructions` (purpose, the units convention, when to use
 - **Every price is USD per 1,000,000 tokens.** `2.5` means $2.50 per 1M tokens.
 - `estimate` / `compare` take **raw token counts** (e.g. `1000000`), not millions.
 - `output_per_mtok: null` ⇒ non-generative model (embeddings/rerankers); output tokens cost $0.
-- Model ids are `provider/model`, e.g. `openai/gpt-4o`, `anthropic/claude-3.5-sonnet`.
+- Model ids are `provider/model`, where `provider` is the **serving** provider, e.g. `openai/gpt-4o`, `anthropic/claude-sonnet-4-5`. The same model is often served by several providers at different prices — compare across them by id.
 
 ## How it works
 
 ```mermaid
 flowchart LR
-    OR[OpenRouter<br/>/api/v1/models] -->|live fetch + timeout| MAP[map → ModelPricing<br/>USD per 1M tokens]
+    MD[models.dev<br/>/api.json] -->|live fetch + timeout| MAP[map → ModelPricing<br/>USD per 1M tokens]
     MAP --> Q{query}
     Q --> S[search]
     Q --> G[get]
@@ -179,18 +179,18 @@ flowchart LR
     S & G & E & C --> MCP[MCP server]
 ```
 
-A single `OpenRouter` Effect service fetches and normalizes the catalog (cached in-process for `TOKENOMICS_CACHE_TTL_SECONDS`, default 60s). Both the CLI and the MCP server call one shared operations layer, so they behave identically and share typed, tagged errors.
+A single `ModelsDev` Effect service fetches and normalizes the catalog — flattening every provider's models into one list of `(provider, model)` records — cached in-process for `TOKENOMICS_CACHE_TTL_SECONDS` (default 60s). Both the CLI and the MCP server call one shared operations layer, so they behave identically and share typed, tagged errors.
 
 ## Configuration
 
 All optional — sensible defaults work out of the box.
 
-| Variable                       | Default                               | Description                                                                       |
-| ------------------------------ | ------------------------------------- | --------------------------------------------------------------------------------- |
-| `OPENROUTER_API_URL`           | `https://openrouter.ai/api/v1/models` | Source endpoint (override to proxy)                                               |
-| `TOKENOMICS_CACHE_TTL_SECONDS` | `60`                                  | In-process reuse window; `0` = fetch fresh every call                             |
-| `TOKENOMICS_FETCH_TIMEOUT_MS`  | `15000`                               | Hard timeout so a hung network fails fast                                         |
-| `TOKENOMICS_STRICT_LOOKUP`     | `false`                               | `1` makes a `get_model_pricing` miss a hard error instead of returning candidates |
+| Variable                       | Default                       | Description                                                                       |
+| ------------------------------ | ----------------------------- | --------------------------------------------------------------------------------- |
+| `MODELS_DEV_API_URL`           | `https://models.dev/api.json` | Source endpoint (override to proxy)                                               |
+| `TOKENOMICS_CACHE_TTL_SECONDS` | `60`                          | In-process reuse window; `0` = fetch fresh every call                             |
+| `TOKENOMICS_FETCH_TIMEOUT_MS`  | `15000`                       | Hard timeout so a hung network fails fast                                         |
+| `TOKENOMICS_STRICT_LOOKUP`     | `false`                       | `1` makes a `get_model_pricing` miss a hard error instead of returning candidates |
 
 ## Development
 
@@ -205,7 +205,7 @@ npm test                          # unit tests for the pricing math
 
 - [ ] Additional pricing sources (direct provider pages) as sibling Effect services, merged transparently
 - [ ] Token counting from raw text/files so `estimate` can price an actual prompt
-- [ ] Server-side OpenRouter sorts/filters (throughput, tool-calling support)
+- [ ] Filter/surface model metadata from models.dev (reasoning, tool-calling, attachments)
 - [ ] Publish to npm + `.mcpb` bundle for one-click Desktop install
 
 ## License

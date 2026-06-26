@@ -79,6 +79,12 @@ export function findModel(all: ReadonlyArray<ModelPricing>, query: string, provi
   const pool = provider ? all.filter((m) => m.provider === provider.toLowerCase()) : all;
   const nq = norm(query);
 
+  // A unique exact id match wins outright. Gateway providers on models.dev often set
+  // display_name to the upstream id (e.g. "openai/gpt-4o"), so an id like "openai/gpt-4o"
+  // would otherwise tie with those display names; the canonical id is more authoritative.
+  const idExact = pool.filter((m) => norm(m.model_id) === nq);
+  if (idExact.length === 1) return { match: idExact[0], candidates: [] };
+
   const exact = pool.filter((m) => norm(m.model_id) === nq || norm(m.display_name) === nq);
   if (exact.length === 1) return { match: exact[0], candidates: [] };
 

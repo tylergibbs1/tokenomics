@@ -1,6 +1,6 @@
 import { Effect } from "effect";
 import { ModelNotFoundError } from "./errors.js";
-import { OpenRouter } from "./openrouter.js";
+import { ModelsDev } from "./modelsdev.js";
 import {
   estimateCost,
   findModel,
@@ -14,20 +14,20 @@ import type { ModelPricing } from "./types.js";
 
 /**
  * High-level operations shared by the CLI and the MCP server. Each fetches the live
- * model list from OpenRouter (cached briefly in-process) and runs a pure query, so
+ * model list from models.dev (cached briefly in-process) and runs a pure query, so
  * both surfaces get identical behavior and error types.
  */
 
 export const searchOp = (params: SearchParams) =>
   Effect.gen(function* () {
-    const or = yield* OpenRouter;
+    const or = yield* ModelsDev;
     const models = yield* or.models;
     return searchModels(models, params);
   });
 
 export const getModelOp = (query: string, provider?: string) =>
   Effect.gen(function* () {
-    const or = yield* OpenRouter;
+    const or = yield* ModelsDev;
     const models = yield* or.models;
     const result = findModel(models, query, provider);
     if (!result.match) {
@@ -51,7 +51,7 @@ export interface CompareResult {
 
 export const compareOp = (models: ReadonlyArray<string>, cost: CostInput) =>
   Effect.gen(function* () {
-    const or = yield* OpenRouter;
+    const or = yield* ModelsDev;
     const all = yield* or.models;
 
     const ranked: CostEstimate[] = [];
@@ -79,7 +79,7 @@ export interface ProviderStatus {
 /** Distinct providers present in the live data, with model counts. */
 export const providersOp = () =>
   Effect.gen(function* () {
-    const or = yield* OpenRouter;
+    const or = yield* ModelsDev;
     const all = yield* or.models;
     const byProvider = new Map<string, ModelPricing[]>();
     for (const m of all) {

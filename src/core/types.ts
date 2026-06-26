@@ -58,6 +58,6 @@ export const ModelPricing = z.object({
     .describe("Short caveats from the pricing page, e.g. 'batch API 50% off', 'first 1M tokens/day free'."),
   source_url: z.string().url().describe("Canonical page for this model on the data source."),
   fetched_at: z.string().datetime().describe("ISO 8601 timestamp when this record was fetched from the source."),
-  source: z.string().describe("Data source the record came from, e.g. 'openrouter'."),
+  source: z.string().describe("Data source the record came from, e.g. 'models.dev'."),
 });
 export type ModelPricing = z.infer<typeof ModelPricing>;
